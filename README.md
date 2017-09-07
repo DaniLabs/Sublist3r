@@ -108,14 +108,15 @@ c:\python27\python.exe -m pip install win_unicode_console colorama
 Short Form    | Long Form         | Description
 ------------- | ------------------|-------------
 -d            | --domain          | Domain name to enumerate subdomains of
--b            | --bruteforce      | Enable the subbrute bruteforce module
+-b            | --bruteforce      | Enable the subbrute bruteforce module ([New] Add best wordlist subdomains)
 -p            | --ports           | Scan the found subdomains against specific tcp ports
 -v            | --verbose         | Enable the verbose mode and display results in realtime
 -t            | --threads         | Number of threads to use for subbrute bruteforce
 -e            | --engines         | Specify a comma-separated list of search engines
 -o            | --output          | Save the results to text file
 -h            | --help            | show the help message and exit
--to           | --takover-check   | [New] Scan subdomains for unregistered services such as Github Pages
+-to           | --takover         | [New] Scan subdomains for unregistered services such as Github Pages
+-i            | --findip          | [New] Find the IP address of each subdomain
 
 ### Examples
 
