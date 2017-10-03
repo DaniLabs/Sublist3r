@@ -2,13 +2,12 @@ import multiprocessing
 import os
 import re
 import sys
+import requests
 
 # external modules
 from modules.engines.engines import Engines
 from modules.subbrute import subbrute
-from modules.util.portscanner import PortScanner
 from modules.util.util import Util
-from modules.bfac import bfac
 
 # Python 2.x and 3.x compatibility
 if sys.version >= '3':
@@ -120,13 +119,7 @@ class SubScann3r:
                             print(
                                 self.logger.Y + "[-] Found unregistered service \"" + service + "\" on subdomain " + subdomain + self.logger.W)
 
-            if self.arguments.ports:
-                if not self.arguments.silent:
-                    print(self.logger.G + "[-] Starting port scan for the following ports: %s%s" % (self.logger.Y, self.arguments.portss) + self.logger.W)
-                ports = self.arguments.ports.split(',')
-                pscan = PortScanner(subdomains, ports)
-                pscan.run()
-
+    
             elif not self.arguments.silent:
                 num = 1
                 for subdomain in subdomains:
@@ -137,25 +130,13 @@ class SubScann3r:
                     else:
                         print("{}[{}/{}] {} {}".format(self.logger.G, num, len(subdomains), subdomain, self.logger.W))
                     num +=1
-
-                    if self.arguments.findings:
-                        excluded_status_code = [301, 302, 404, 400, 500, 502, 503]
-                        http_subdomain = "http://{}".format(subdomain)
-                        results = bfac.check_findings(http_subdomain, excluded_status_codes=excluded_status_code)
-                        if None in (results):
-                            pass
-                        else:
-                            for r in results:
-                                if r['status_code'] is 200:
-                                    print("{}HTTP {} (C={}; L={}) {}".format(self.logger.Y, r['url'], r['status_code'], r['content_length'], self.logger.W))
-
-                        http_subdomain = "https://{}".format(subdomain)
-                        results = bfac.check_findings(http_subdomain, excluded_status_codes=excluded_status_code)
-                        if None in (results):
-                            pass
-                        else:
-                            for r in results:
-                                if r['status_code'] is 200:
-                                    print("{}HTTP {} (C={}; L={}) {}".format(self.logger.Y, r['url'], r['status_code'], r['content_length'], self.logger.W))
+                    
+                    try:
+                        print(self.logger.G + "[-] Searching leak files" + self.logger.W)
+                        self.util.leak_files(subdomain)
+                        print(self.logger.G + "[-] Searching CRLF" + self.logger.W)
+                        self.util.crlf(subdomain)
+                    except Exception as e:
+                        pass
 
             return subdomains

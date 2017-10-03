@@ -28,21 +28,9 @@ class Sublist3r(object):
         self.logger.is_verbose = self.arguments.args.verbose
 
     def run(self):
-        self.banner()
         scanner = SubScann3r(self.arguments.args.domain, self.logger, self.arguments.args)
         return scanner.scan()
 
-    def banner(self):
-        print("""%s
-                     ____        _     _ _     _   _____
-                    / ___| _   _| |__ | (_)___| |_|___ / _ __
-                    \___ \| | | | '_ \| | / __| __| |_ \| '__|
-                     ___) | |_| | |_) | | \__ \ |_ ___) | |
-                    |____/ \__,_|_.__/|_|_|___/\__|____/|_|%s%s
-
-                    # Coded (@aboul3la) Rewritten (@Plazmaz) Modified (DaniLabs)
-        """ % (self.logger.R, self.logger.W, self.logger.Y))
-        
 if __name__ == '__main__':
     main = Sublist3r()
     main.run()

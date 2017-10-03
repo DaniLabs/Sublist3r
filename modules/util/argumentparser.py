@@ -31,9 +31,6 @@ class ArgumentParser(object):
         parser.add_argument('-e', 
                             '--engines', 
                             help='Specify a comma-separated list of search engines')
-        parser.add_argument('-p', 
-                            '--ports', 
-                            help='Scan the found subdomains against specified tcp ports')
         parser.add_argument('-to',
                             '--takeover',
                             help='Scan for subdomain takeover issues',
